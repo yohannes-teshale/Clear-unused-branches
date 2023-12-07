@@ -55,15 +55,8 @@ show_history() {
     if [ -f "$HISTORY_FILE" ]; then
         selected_line=$(cat "$HISTORY_FILE" | fzf --ansi --header="Branch History" --preview-window=right:50% \
             --preview="git log --oneline --graph --decorate --all --date=relative {2}" \
-            --bind="enter:execute(git checkout {2})" | awk '{print $0}')
+            --bind="enter:execute(git checkout -b {1} {2})" | awk '{print $0}')
 
-        if [ -n "$selected_line" ]; then
-            selected_branch=$(echo "$selected_line" | awk '{print $1}')
-            selected_branch_name= $(echo "$selected_line" | awk '{print $0}')
-            git checkout "$selected_branch"
-            git checkout -b "meaza"
-            
-        fi
     else
         echo "No branch history available."
     fi
@@ -79,11 +72,11 @@ while [[ "$#" -gt 0 ]]; do
             REMOTE_REPO_NAME="$2"
             shift
             ;;
-        --show-history)
+        -h|--show-history)
             show_history
             exit 0
             ;;
-        --clear-history)
+        -c|--clear-history)
             clear_history
             exit 0
             ;;
