@@ -24,6 +24,7 @@ clean_branches() {
 
             if [[ $time_diff -gt $two_weeks_in_seconds ]]; then
                 branches_to_delete+=("$branch")
+                echo -e "$branch\t\t$last_commit_hash" >> "$HISTORY_FILE"
             else
                 echo "Can't delete branch: $branch, code has been pushed in the last two weeks."
             fi
@@ -41,7 +42,7 @@ clean_branches() {
 
     for branch in "${branches_to_delete[@]}"; do
         git branch -D "$branch"
-        echo -e "$branch\t\t$last_commit_hash" >> "$HISTORY_FILE"
+        #echo -e "$branch\t\t$last_commit_hash" >> "$HISTORY_FILE"
         echo "Deleted branch: $branch"
     done
 }
@@ -55,7 +56,7 @@ show_history() {
     if [ -f "$HISTORY_FILE" ]; then
         selected_line=$(cat "$HISTORY_FILE" | fzf --ansi --header="Branch History" --preview-window=right:50% \
             --preview="git log --oneline --graph --decorate --all --date=relative {2}" \
-            --bind="enter:execute(git checkout -b {1} {2})" | awk '{print $0}')
+            --bind="enter:execute(git checkout -b {1} {2}),enter:+abort" | awk '{print $0}')
 
     else
         echo "No branch history available."
