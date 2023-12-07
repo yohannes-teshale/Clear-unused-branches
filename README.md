@@ -22,6 +22,8 @@ if you're interested in helping here are things you can do:
   - add cron scheduling (never done one of these.)
   - getting rid of git logs (after it's done).
   - resolving naming clashes when recovering branches.
+  - prompt before clearing history.
+  - switch over to sqlite.
     
 
 
