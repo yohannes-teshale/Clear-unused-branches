@@ -1,0 +1,111 @@
+#!/bin/bash
+
+MAIN_BRANCH_NAME="main" 
+CUSTOM_MAIN_BRANCH_NAME=""  
+REMOTE_REPO_NAME=""
+EXCLUDE_REMOTE=""
+EXCLUDE_BRANCH=""
+HISTORY_FILE="branch_history.txt"
+
+clean_branches() {
+    git fetch --all --prune
+    git branch -r | grep -v '\->' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#${REMOTE_REPO_NAME}/}" "$remote"; done
+    all_branches=$(git branch | cut -c 3-)
+    current_date=$(date +%s)
+
+    branches_to_delete=()
+
+    for branch in $all_branches; do
+        if [[ "$branch" != "$MAIN_BRANCH_NAME" && "$branch" != "master" && "$branch" != "$EXCLUDE_BRANCH" ]]; then
+            last_commit_hash=$(git log --pretty=format:%H -n 1 "$branch")
+            last_commit_timestamp=$(git log --pretty=format:%at -n 1 "$branch")
+            time_diff=$((current_date - last_commit_timestamp))
+            two_weeks_in_seconds=$((14 * 24 * 60 * 60))
+
+            if [[ $time_diff -gt $two_weeks_in_seconds ]]; then
+                branches_to_delete+=("$branch")
+            else
+                echo "Can't delete branch: $branch, code has been pushed in the last two weeks."
+            fi
+        fi
+    done
+
+    if [ ${#branches_to_delete[@]} -eq 0 ]; then
+        echo "No branches to delete."
+        return
+    fi
+
+    if [ ! -f "$HISTORY_FILE" ]; then
+        echo -e "Branch\t\tLast Commit Hash" > "$HISTORY_FILE"
+    fi
+
+    for branch in "${branches_to_delete[@]}"; do
+        git branch -D "$branch"
+        echo -e "$branch\t\t$last_commit_hash" >> "$HISTORY_FILE"
+        echo "Deleted branch: $branch"
+    done
+}
+
+clear_history() {
+    rm -f "$HISTORY_FILE"
+    echo "Branch history cleared."
+}
+
+show_history() {
+    if [ -f "$HISTORY_FILE" ]; then
+        selected_line=$(cat "$HISTORY_FILE" | fzf --ansi --header="Branch History" --preview-window=right:50% \
+            --preview="git log --oneline --graph --decorate --all --date=relative {2}" \
+            --bind="enter:execute(git checkout {2})" | awk '{print $0}')
+
+        if [ -n "$selected_line" ]; then
+            selected_branch=$(echo "$selected_line" | awk '{print $1}')
+            selected_branch_name= $(echo "$selected_line" | awk '{print $0}')
+            git checkout "$selected_branch"
+            git checkout -b "meaza"
+            
+        fi
+    else
+        echo "No branch history available."
+    fi
+}
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -m|--main-branch)
+            CUSTOM_MAIN_BRANCH_NAME="$2"
+            shift
+            ;;
+        -r|--remote-repo)
+            REMOTE_REPO_NAME="$2"
+            shift
+            ;;
+        --show-history)
+            show_history
+            exit 0
+            ;;
+        --clear-history)
+            clear_history
+            exit 0
+            ;;
+        *)
+            echo "Unknown parameter: $1"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+if [ -z "$REMOTE_REPO_NAME" ]; then
+    read -p "Enter the name of the remote repository: " REMOTE_REPO_NAME
+fi
+
+if [ -z "$CUSTOM_MAIN_BRANCH_NAME" ]; then
+    read -p "Enter the main branch name (default is $MAIN_BRANCH_NAME): " CUSTOM_MAIN_BRANCH_NAME
+fi
+
+EXCLUDE_REMOTE="$REMOTE_REPO_NAME $CUSTOM_MAIN_BRANCH_NAME"
+EXCLUDE_BRANCH="${CUSTOM_MAIN_BRANCH_NAME:-$MAIN_BRANCH_NAME}"
+
+clean_branches
+
+
