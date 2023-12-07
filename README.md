@@ -8,10 +8,10 @@ The history uses fzf to add some interactivityy so you can select the branch you
 I actually planned to use sqlite to store the history (still might in the future) but it got overly complicated.
 
 options:
---show-history: shows interactive history
---cear-history: clears history (not interactive)
--m : main branch
--r : remote repository
+  - --show-history: shows interactive history
+  - --cear-history: clears history (not interactive)
+  - -m : main branch
+  - -r : remote repository
 
 for yessi:
 
