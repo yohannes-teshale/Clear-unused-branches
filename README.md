@@ -3,7 +3,7 @@
 This scripts clears branches that havent been pushed into for two weeks.
 
 at the time being it only deletes branches from local, but thats only for testing purposes and will once stable enough it will be able to delete branches in remote repos too. 
-removed branches names are stored in a file alongside thier last commit hashes so if just incase you remove an imoprtant branch you can recover it by using the --show-history command option.
+removed branches names are stored in a file alongside thier last commit hashes so if just incase you remove an imoprtant branch you can recover it by using the `--show-history` command option.
 The history uses fzf to add some interactivityy so you can select the branch you want and you'll be automatically checkedout there.
 I actually planned to use sqlite to store the history (still might in the future) but it got overly complicated.
 
