@@ -24,6 +24,9 @@ if you're interested in helping here are things you can do:
   - resolving naming clashes when recovering branches.
   - prompt before clearing history.
   - switch over to sqlite.
+  - So I was thinking today that a dev is most likely to work on multiple repositories at a time. so switching over to each repo and trying to set this up would       behectic. solution? maybe user can provide a dir of thier workspace and the script would go through each dir and find all the .gitconfig files. from there the     script would be able to obtain informations such as name of the remote repo and main branch. But this would create another challenge, as of now delted     
+    branches are stored in a single file. if multiple repos have the same branch name it would be confusing, Soln? create a sepatate flie for each repo or switch 
+    to sqlite. What do you think yessi?
     
 
 
